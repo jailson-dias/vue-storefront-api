@@ -1,6 +1,7 @@
 const program = require('commander')
 const config = require('config')
 const spawn = require('child_process').spawn
+const { getPort } = require('../src/helpers/elasticsearch')
 
 function multiStoreConfig(apiConfig, storeCode) {
   let confCopy = Object.assign({}, apiConfig)
@@ -22,7 +23,7 @@ function multiStoreConfig(apiConfig, storeCode) {
 function getMagentoDefaultConfig(storeCode) {
   const apiConfig = multiStoreConfig(config.magento2.api, storeCode)
   return {
-    TIME_TO_EXIT: 2000,
+    TIME_TO_EXIT: 30000,
     PRODUCTS_SPECIAL_PRICES: true,
     SKIP_REVIEWS: false,
     SKIP_CATEGORIES: false,
@@ -39,7 +40,7 @@ function getMagentoDefaultConfig(storeCode) {
     REDIS_HOST: config.redis.host,
     REDIS_PORT: config.redis.port,
     INDEX_NAME: config.elasticsearch.indices[0],
-    DATABASE_URL: `${config.elasticsearch.protocol}://${config.elasticsearch.host}:${config.elasticsearch.port}`
+    DATABASE_URL: `${config.elasticsearch.protocol}://${config.elasticsearch.host}${getPort(config.elasticsearch.port)}`
   }
 }
 
@@ -88,6 +89,7 @@ program
         magentoConfig.INDEX_NAME = storeView.elasticsearch.index
         magentoConfig.INDEX_META_PATH = '.lastIndex-' + cmd.storeCode + '.json'
         magentoConfig.MAGENTO_STORE_ID = storeView.storeId
+        magentoConfig.STORE_CODE = cmd.storeCode
       }
     }
 
@@ -129,6 +131,8 @@ program
         process.exit(-1)
       } else {
         magentoConfig.INDEX_NAME = storeView.elasticsearch.index;
+        magentoConfig.MAGENTO_STORE_ID = storeView.storeId;
+        magentoConfig.STORE_CODE = cmd.storeCode
       }
     }
 
