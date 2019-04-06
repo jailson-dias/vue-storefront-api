@@ -12,6 +12,4 @@ function getPort(port) {
     return ''
 }
 
-export {
-    getPort
-}
+exports.getPort = getPort
